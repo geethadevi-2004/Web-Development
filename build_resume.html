@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Build Resume</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .form-container {
+      max-width: 900px;
+      margin: 40px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .form-entry {
+      position: relative;
+      padding: 20px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background-color: #fdfdfd;
+    }
+
+    .form-entry .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .form-label {
+      font-weight: 500;
+    }
+
+    .section-title {
+      margin-top: 30px;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    .btn-group {
+      margin-top: 10px;
+    }
+
+    input[type="file"] {
+      border: 1px solid #ccc;
+      padding: 6px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <form method="POST" enctype="multipart/form-data" class="form-container">
+    <h2 class="text-center mb-4">Build Your Resume</h2>
+    {% csrf_token %}
+
+    <!-- Personal Info -->
+    <div class="mb-4 row g-3">
+      <div class="col-md-6">
+        {{ form.name.label_tag }} {{ form.name }}
+      </div>
+      <div class="col-md-6">
+        {{ form.email.label_tag }} {{ form.email }}
+      </div>
+      <div class="col-md-6">
+        {{ form.phone.label_tag }} {{ form.phone }}
+      </div>
+      <div class="col-md-6">
+        {{ form.linkedin.label_tag }} {{ form.linkedin }}
+      </div>
+      <div class="col-md-6">
+        {{ form.github.label_tag }} {{ form.github }}
+      </div>
+      <div class="col-md-6">
+        {{ form.portfolio.label_tag }} {{ form.portfolio }}
+      </div>
+      <div class="col-12">
+        {{ form.summary.label_tag }} {{ form.summary }}
+      </div>
+      <div class="col-12">
+        <label for="id_photo" class="form-label">Upload Profile Photo</label>
+        {{ form.photo }}
+      </div>
+    </div>
+
+    <!-- Skills -->
+    <div>
+      <h4 class="section-title">Skills</h4>
+      {{ skill_formset.management_form }}
+      <div id="skill-formset">
+        {% for form in skill_formset %}
+          <div class="form-entry skill-form">
+            <div class="row align-items-center">
+              <div class="col-md-11">
+                <div class="mb-2">{{ form.name.label_tag }} {{ form.name }}</div>
+              </div>
+              <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-outline-danger btn-sm delete-btn" onclick="deleteForm(this, 'skill')">🗑️</button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="addSkill()">➕ Add Skill</button>
+    </div>
+
+    <!-- Experience -->
+    <div>
+      <h4 class="section-title">Experience</h4>
+      {{ experience_formset.management_form }}
+      <div id="experience-formset">
+        {% for form in experience_formset %}
+          <div class="form-entry experience-form">
+            <div class="mb-2">{{ form.title.label_tag }} {{ form.title }}</div>
+            <div class="mb-2">{{ form.company.label_tag }} {{ form.company }}</div>
+            <div class="mb-2">{{ form.duration.label_tag }} {{ form.duration }}</div>
+            <div class="mb-2">{{ form.description.label_tag }} {{ form.description }}</div>
+            <button type="button" class="btn btn-outline-danger btn-sm delete-btn" onclick="deleteForm(this, 'experience')">🗑️</button>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="addExperience()">➕ Add Experience</button>
+    </div>
+
+    <!-- Projects -->
+    <div>
+      <h4 class="section-title">Projects</h4>
+      {{ project_formset.management_form }}
+      <div id="project-formset">
+        {% for form in project_formset %}
+          <div class="form-entry project-form">
+            <div class="mb-2">{{ form.title.label_tag }} {{ form.title }}</div>
+            <div class="mb-2">{{ form.link.label_tag }} {{ form.link }}</div>
+            <div class="mb-2">{{ form.description.label_tag }} {{ form.description }}</div>
+            <button type="button" class="btn btn-outline-danger btn-sm delete-btn" onclick="deleteForm(this, 'project')">🗑️</button>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="addProject()">➕ Add Project</button>
+    </div>
+
+    <!-- Achievements -->
+    <div>
+      <h4 class="section-title">Achievements</h4>
+      {{ achievement_formset.management_form }}
+      <div id="achievement-formset">
+        {% for form in achievement_formset %}
+          <div class="form-entry achievement-form">
+            <div class="mb-2">{{ form.title.label_tag }} {{ form.title }}</div>
+            <button type="button" class="btn btn-outline-danger btn-sm delete-btn" onclick="deleteForm(this, 'achievement')">🗑️</button>
+          </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn btn-primary btn-sm" onclick="addAchievement()">➕ Add Achievement</button>
+    </div>
+
+    <!-- Submit -->
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-success btn-lg">Preview Resume</button>
+    </div>
+  </form>
+</div>
+
+<!-- Scripts -->
+<script>
+  let skillIndex = {{ skill_formset.total_form_count }};
+  let experienceIndex = {{ experience_formset.total_form_count }};
+  let projectIndex = {{ project_formset.total_form_count }};
+  let achievementIndex = {{ achievement_formset.total_form_count }};
+
+  const totalSkillForms = document.querySelector('[name="skill-TOTAL_FORMS"]');
+  const totalExperienceForms = document.querySelector('[name="experience-TOTAL_FORMS"]');
+  const totalProjectForms = document.querySelector('[name="project-TOTAL_FORMS"]');
+  const totalAchievementForms = document.querySelector('[name="achievement-TOTAL_FORMS"]');
+
+  function cloneForm(prefix, index, totalFormsField, containerId) {
+    const container = document.getElementById(containerId);
+    const newForm = container.children[0].cloneNode(true);
+    const regex = new RegExp(`${prefix}-\\d+`, 'g');
+    newForm.innerHTML = newForm.innerHTML.replace(regex, `${prefix}-${index}`);
+    container.appendChild(newForm);
+    totalFormsField.value = index + 1;
+  }
+
+  function deleteForm(button, prefix) {
+    const formDiv = button.closest(`.${prefix}-form`);
+    const container = document.getElementById(`${prefix}-formset`);
+    if (container.children.length > 1) {
+      formDiv.remove();
+      document.querySelector(`[name="${prefix}-TOTAL_FORMS"]`).value = container.children.length;
+    } else {
+      alert("At least one entry is required.");
+    }
+  }
+
+  function addSkill() {
+    cloneForm("skill", skillIndex++, totalSkillForms, "skill-formset");
+  }
+
+  function addExperience() {
+    cloneForm("experience", experienceIndex++, totalExperienceForms, "experience-formset");
+  }
+
+  function addProject() {
+    cloneForm("project", projectIndex++, totalProjectForms, "project-formset");
+  }
+
+  function addAchievement() {
+    cloneForm("achievement", achievementIndex++, totalAchievementForms, "achievement-formset");
+  }
+</script>
+
+</body>
+</html>
